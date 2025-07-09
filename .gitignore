@@ -1,0 +1,21 @@
+# Ignorar dados persistentes do n8n
+/dados-n8n/
+
+# Ignorar arquivos de log
+*.log
+
+# Ignorar banco de dados SQLite
+*.sqlite
+
+# Ignorar arquivos de crash
+*.journal
+
+# Ignorar variáveis de ambiente
+.env
+
+# Ignorar node_modules (caso existam nodes customizados)
+dados-n8n/nodes/node_modules/
+
+# Ignorar arquivos do sistema
+.DS_Store
+Thumbs.db 
