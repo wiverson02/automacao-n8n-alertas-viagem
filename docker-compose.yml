@@ -9,7 +9,7 @@ services:
     environment:
       - N8N_BASIC_AUTH_ACTIVE=true
       - N8N_BASIC_AUTH_USER=danielquimicah@hotmail.com
-      - N8N_BASIC_AUTH_PASSWORD=Daniel@1993
+      - N8N_BASIC_AUTH_PASSWORD=Montew02
       - NODE_FUNCTION_ALLOW_EXTERNAL=*
     volumes:
       - ./dados-n8n:/home/node/.n8n

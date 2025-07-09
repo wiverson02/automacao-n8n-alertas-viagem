@@ -28,7 +28,7 @@ Este projeto utiliza o [n8n](https://n8n.io/), uma plataforma de automação de 
 3. **Acessar o n8n**:
    - Abra o navegador e acesse: [http://localhost:5678](http://localhost:5678)
    - Usuário: `danielquimicah@hotmail.com`
-   - Senha: `Daniel@1993`
+   - Senha: `Montew02`
 
 4. **Importar o workflow**:
    - No painel do n8n, importe o arquivo `alertas.json` para ativar o fluxo de alertas.
