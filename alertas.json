@@ -1,0 +1,306 @@
+{
+  "name": "Alerta de Voos (Sem Validação Automática)",
+  "nodes": [
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "cidade_origem_nome",
+              "value": "Curitiba"
+            },
+            {
+              "name": "cidade_destino_nome",
+              "value": "Teresina"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Painel de Controle",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [
+        20,
+        360
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://pontospravoar.com/feed",
+        "responseFormat": "json",
+        "options": {}
+      },
+      "name": "Buscar RSS Pontos pra Voar",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        260,
+        140
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://passageirodeprimeira.com/feed",
+        "responseFormat": "json",
+        "options": {}
+      },
+      "name": "Buscar RSS Passageiro de Primeira",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        260,
+        360
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://www.melhoresdestinos.com.br/feed",
+        "responseFormat": "json",
+        "options": {}
+      },
+      "name": "Buscar RSS Melhores Destinos",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        260,
+        580
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json.title}}",
+              "operation": "contains",
+              "value2": "={{$node[\"Painel de Controle\"].json[\"cidade_origem_nome\"]}}"
+            },
+            {
+              "value1": "={{$json.title}}",
+              "operation": "contains",
+              "value2": "={{$node[\"Painel de Controle\"].json[\"cidade_destino_nome\"]}}"
+            },
+            {
+              "value1": "={{$json.title}}",
+              "operation": "contains",
+              "value2": "milhas"
+            }
+          ]
+        },
+        "options": {
+          "caseSensitive": false
+        }
+      },
+      "name": "Filtrar Posts de Interesse",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        720,
+        360
+      ]
+    },
+    {
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      },
+      "name": "Unir feeds",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 1,
+      "position": [
+        500,
+        360
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const post = $json;\n\nlet message = `✈️ *POSSÍVEL PROMOÇÃO ENCONTRADA!* ✈️\\n\\n`;\nmessage += `*Notícia:* ${post.title}\\n\\n`;\nmessage += `A notícia menciona *{{$node[\"Painel de Controle\"].json.cidade_origem_nome}}* e *{{$node[\"Painel de Controle\"].json.cidade_destino_nome}}*.\\n\\n`;\nmessage += `*Sugestão:* Verifique manualmente no link abaixo para confirmar se a promoção ainda é válida!\\n\\n`;\nmessage += `*Link da Notícia:* ${post.link}`;\n\nreturn [{ json: { telegram_message: message } }];"
+      },
+      "name": "Formatar Mensagem",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        940,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "893070660",
+        "text": "={{$json.telegram_message}}",
+        "additionalFields": {
+          "parse_mode": "Markdown"
+        }
+      },
+      "name": "Enviar Alerta de PROMOÇÃO",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        1160,
+        260
+      ],
+      "credentials": {
+        "telegramApi": {
+          "id": "",
+          "name": ""
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "name": "Start",
+      "type": "n8n-nodes-base.start",
+      "typeVersion": 1,
+      "position": [
+        -160,
+        360
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "893070660",
+        "text": "=❌ *ERRO NO WORKFLOW* ❌\n\nO workflow 'Alerta de Voos' encontrou um erro e parou.\n\n*Nó com erro:* `{{$json[\"execution\"][\"node\"][\"name\"]}}`\n*Link da Execução:* `{{$json[\"execution\"][\"url\"]}}`\n\nVerifique o que pode ter acontecido.",
+        "additionalFields": {
+          "parse_mode": "Markdown"
+        }
+      },
+      "name": "Enviar Alerta de ERRO",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        940,
+        640
+      ],
+      "credentials": {
+        "telegramApi": {
+          "id": "",
+          "name": ""
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "name": "Error Trigger",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        720,
+        640
+      ]
+    }
+  ],
+  "connections": {
+    "Painel de Controle": {
+      "main": [
+        [
+          {
+            "node": "Buscar RSS Pontos pra Voar",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Buscar RSS Passageiro de Primeira",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Buscar RSS Melhores Destinos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar RSS Pontos pra Voar": {
+      "main": [
+        [
+          {
+            "node": "Unir feeds",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar RSS Passageiro de Primeira": {
+      "main": [
+        [
+          {
+            "node": "Unir feeds",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Buscar RSS Melhores Destinos": {
+      "main": [
+        [
+          {
+            "node": "Unir feeds",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Filtrar Posts de Interesse": {
+      "main": [
+        [
+          {
+            "node": "Formatar Mensagem",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Unir feeds": {
+      "main": [
+        [
+          {
+            "node": "Filtrar Posts de Interesse",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formatar Mensagem": {
+      "main": [
+        [
+          {
+            "node": "Enviar Alerta de PROMOÇÃO",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Painel de Controle",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Enviar Alerta de ERRO",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}
